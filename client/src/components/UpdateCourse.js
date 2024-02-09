@@ -5,17 +5,17 @@ import CourseContext from "../context/CourseContext";
 import UserContext from "../context/UserContext";
 import ErrorsDisplay from "./ErrorsDisplay";
 
-const UpdateCourse = (props) => {
+const UpdateCourse = () => {
   const { course } = useContext(CourseContext);
   const { authUser } = useContext(UserContext);
   const navigate = useNavigate();
   const { id } = useParams();
   const [errors, setErrors] = useState([]);
   
-  //Set API path
+  // Set API path
   const path = `/courses/${id}`;
 
-  //State
+  // State
   const courseTitle = useRef(null);
   const courseDescription = useRef(null);
   const estimatedTime = useRef(null);
@@ -25,10 +25,34 @@ const UpdateCourse = (props) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Check if course is available
+    if (!course) {
+      console.error("Course details are not available.");
+      return;
+    }
+
+    const titleValue = courseTitle.current.value.trim();
+    const descriptionValue = courseDescription.current.value.trim();
+
+    // Check for empty title and description
+    const validationErrors = [];
+    if (!titleValue) {
+      validationErrors.push("Title is required.");
+    }
+    if (!descriptionValue) {
+      validationErrors.push("Description is required.");
+    }
+
+    // Display validation errors if any
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     const courseDetail = {
       id: course.id,
-      title: courseTitle.current.value,
-      description: courseDescription.current.value,
+      title: titleValue,
+      description: descriptionValue,
       estimatedTime: estimatedTime.current.value,
       materialsNeeded: materialsNeeded.current.value,
     };
@@ -37,8 +61,6 @@ const UpdateCourse = (props) => {
       username: authUser.username,
       password: authUser.password,
     };
-    //debug
-    //console.log(course);
 
     try {
       const response = await api(path, "PUT", courseDetail, credential);
@@ -47,15 +69,14 @@ const UpdateCourse = (props) => {
         navigate("/");
       } else if (response.status === 400) {
         const data = await response.json();
-        //console.log(data);
         setErrors(data.errors);
       } else {
         throw new Error();
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       navigate("/error");
-    };
+    }
   };
 
   const handleCancel = (event) => {
@@ -75,7 +96,7 @@ const UpdateCourse = (props) => {
               id="courseTitle"
               name="courseTitle"
               type="text"
-              defaultValue={course.title}
+              defaultValue={course ? course.title : ''}
               ref={courseTitle}
             />
             <p>By Joe Smith</p>
@@ -83,7 +104,7 @@ const UpdateCourse = (props) => {
             <textarea
               id="courseDescription"
               name="courseDescription"
-              defaultValue={course.description}
+              defaultValue={course ? course.description : ''}
               ref={courseDescription}
             />
           </div>
@@ -93,19 +114,19 @@ const UpdateCourse = (props) => {
               id="estimatedTime"
               name="estimatedTime"
               type="text"
-              defaultValue={course.estimatedTime}
+              defaultValue={course ? course.estimatedTime : ''}
               ref={estimatedTime}
             />
             <label htmlFor="materialsNeeded">Materials Needed</label>
             <textarea
               id="materialsNeeded"
               name="materialsNeeded"
-              defaultValue={course.materialsNeeded}
+              defaultValue={course ? course.materialsNeeded : ''}
               ref={materialsNeeded}
             />
           </div>
         </div>
-        <button className="button" type="submit" onClick={handleSubmit}>
+        <button className="button" type="submit">
           Update Course
         </button>
         <button className="button button-secondary" onClick={handleCancel}>
