@@ -28,7 +28,7 @@ This is a full-stack web application built with React for the front end and a RE
 
 ## Installation
 
-- ** Clone the repository**
+- **Clone the repository**
 - **Navigate to the project directory**
     - cd full-stack-app-with-react-rest-api
 
